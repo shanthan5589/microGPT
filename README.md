@@ -2,7 +2,7 @@
 
 A character-level GPT built from scratch with PyTorch.
 
-The project retains the core ideas behind the decoder-only Transformer architecture ([Vaswani et al., 2017](https://arxiv.org/abs/1706.03762)), but instead of Post-LN, it implements the Pre-LN Transformer variant ([Xiong et al., 2020](https://arxiv.org/pdf/2002.04745)).
+The project retains the core ideas behind the decoder-only Transformer architecture ([Vaswani et al., 2017](https://arxiv.org/pdf/1706.03762)), but instead of Post-LN, it implements the Pre-LN Transformer variant ([Xiong et al., 2020](https://arxiv.org/pdf/2002.04745)).
 
 This implementation covers only the pre-training phase and doesn't cover the fine-tuning phase.
 
