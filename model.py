@@ -10,7 +10,8 @@ class Embedding(nn.Module):
     def forward(self, x):
         B, T = x.shape         
         token = self.token_embedding(x)    # (B, T, C)
-        position = self.position_embedding(torch.arange(T))    # (T, C)
+        position_ids = torch.arange(T, device=x.device)   # (T, C)
+        position = self.position_embedding(position_ids)   # (T, C)
         return token + position           # (B, T, C) Broadcasting works.
 
 

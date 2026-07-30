@@ -42,6 +42,7 @@ def GPTDataLoader(text, tokenizer, B=4, T=8, stride=1, shuffle=True, drop_last=T
 
     return dataloader
 
+
 def load_data(B, T, stride, shuffle, drop_last, num_workers):
 
     with open('input.txt') as f:
