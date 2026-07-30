@@ -48,9 +48,8 @@ def load_data(B, T, stride, shuffle, drop_last, num_workers):
         text = f.read()
 
     vocab = sorted(list(set(text)))
-    vocab_size = len(vocab)
 
     tokenizer = Tokenizer(vocab)
     dataloader = GPTDataLoader(text, tokenizer, B=B, T=T, stride=stride, shuffle=shuffle, drop_last=drop_last, num_workers=num_workers)
 
-    return vocab_size, tokenizer, dataloader
+    return vocab, tokenizer, dataloader

@@ -99,7 +99,7 @@ class GPT(nn.Module):
     @torch.no_grad()
     def generate(self, idx, max_tokens=100, temperature=1.0):
         for _ in range(max_tokens):
-            idx_cond = idx if idx.size(1) <= self.T else idx[:, -self.T:, :]
+            idx_cond = idx if idx.size(1) <= self.T else idx[:, -self.T:]
 
             logits = self(idx_cond)   # (B, T, vocab_size)
             logits = logits[:, -1, :] / temperature  # (B, vocab_size)
