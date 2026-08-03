@@ -59,7 +59,7 @@ class FeedForward(nn.Module):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(C, 4*C),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Linear(4*C, C)
         )
 
@@ -100,7 +100,7 @@ class GPT(nn.Module):
     @torch.no_grad()
     def generate(self, idx, max_tokens=100, temperature=1.0):
         for _ in range(max_tokens):
-            idx_cond = idx if idx.size(1) <= self.T else idx[:, -self.T:]
+            idx_cond = idx if idx.size(1) <= self.T else idx[:, -self.T:]  # idx (B, T)
 
             logits = self(idx_cond)   # (B, T, vocab_size)
             logits = logits[:, -1, :] / temperature  # (B, vocab_size)
