@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
 .vscode/
-model.pt
+model-aws-step750.pt
 out/
+uwu/
+training-aws.log
