@@ -16,6 +16,7 @@ n_heads = 6
 max_steps = 5000
 learning_rate = 3e-4
 batch_size = 64
+dropout = 0.2
 
 # Evaluation
 eval_interval = 250
@@ -45,7 +46,8 @@ model = GPT(vocab_size=vocab_size,
             T=context_length, 
             C=n_embed ,
             n_layers=n_layers, 
-            num_head=n_heads).to(device)
+            num_head=n_heads,
+            dropout=dropout).to(device)
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 criterion = nn.CrossEntropyLoss()
@@ -109,10 +111,10 @@ for step in range(max_steps):
                     "C": n_embed,
                     "n_layers": n_layers,
                     "num_head": n_heads,
+                    "dropout": dropout
                 },
                 "vocab": vocab,
                 "state_dict": model.state_dict(),
-
                 # Useful if you want to resume training
                 "optimizer_state_dict": optimizer.state_dict(),
                 "step": completed_steps,

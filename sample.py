@@ -20,7 +20,7 @@ def generate_text(model, tokenizer, prompt, max_tokens=100, temperature=1.0):
     return tokenizer.decode(token_ids)   # output is (1, T), so we access the first element and convert it to a list of integers before decoding.
 
 if __name__ == "__main__":
-    ckpt = torch.load('model-aws-step750.pt', map_location=device, weights_only=True)
+    ckpt = torch.load('model.pt', map_location=device, weights_only=True)
     model = GPT(**ckpt['model_args']).to(device)
     model.load_state_dict(ckpt['state_dict'])
     tokenizer = Tokenizer(ckpt['vocab'])  # Assuming the tokenizer is stored in the checkpoint as 'vocab'

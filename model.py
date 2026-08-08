@@ -10,18 +10,19 @@ class Embedding(nn.Module):
     def forward(self, x):
         B, T = x.shape         
         token = self.token_embedding(x)    # (B, T, C)
-        position_ids = torch.arange(T, device=x.device)   # (T, C)
+        position_ids = torch.arange(T, device=x.device)  
         position = self.position_embedding(position_ids)   # (T, C)
-        return token + position           # (B, T, C) Broadcasting works.
+        return token + position       # (B, T, C) Broadcasting works.
 
 
 class Head(nn.Module):
-    def __init__(self, C, T, head_size):
+    def __init__(self, C, T, head_size, dropout):
         super().__init__()
         self.head_size = head_size
         self.query = nn.Linear(C, head_size, bias=False)
         self.key = nn.Linear(C, head_size, bias=False)
         self.value = nn.Linear(C, head_size, bias=False)
+        self.dropout = nn.Dropout(dropout)
         self.register_buffer('tril', torch.tril(torch.ones(T, T)))
 
     def forward(self, x):
@@ -35,6 +36,7 @@ class Head(nn.Module):
         wei = q @ k.transpose(-2, -1)  * (self.head_size ** -0.5)        # (B, T, head_size) x (B, head_size, T) = (B, T, T)
         wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf'))
         wei = torch.softmax(wei, dim=-1)
+        wei = self.dropout(wei)
 
         out = wei @ v    # (B, T, T) x (B, T, head_size) = (B, T, head_size)
 
@@ -42,37 +44,40 @@ class Head(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, C, T, num_heads):
+    def __init__(self, C, T, num_heads, dropout):
         super().__init__()
         self.head_size = C // num_heads
-        self.heads = nn.ModuleList([Head(C, T, self.head_size) for _ in range(num_heads)])
+        self.heads = nn.ModuleList([Head(C, T, self.head_size, dropout) for _ in range(num_heads)])
         self.proj = nn.Linear(C, C)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
         out = torch.cat([h(x) for h in self.heads], dim=-1)
         out = self.proj(out)
+        out = self.dropout(out)
         return out
 
 
 class FeedForward(nn.Module):
-    def __init__(self, C):
+    def __init__(self, C, dropout):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(C, 4*C),
             nn.GELU(),
-            nn.Linear(4*C, C)
+            nn.Linear(4*C, C),
+            nn.Dropout(dropout)
         )
 
     def forward(self, x):
         return self.net(x)
 
 class Block(nn.Module):
-    def __init__(self, C, T, num_heads):
+    def __init__(self, C, T, num_heads, dropout):
         super().__init__()
         self.ln1 = nn.LayerNorm(C)
-        self.attn = MultiHeadAttention(C, T, num_heads)
+        self.attn = MultiHeadAttention(C, T, num_heads, dropout)
         self.ln2 = nn.LayerNorm(C)
-        self.ff = FeedForward(C)
+        self.ff = FeedForward(C, dropout)
 
     def forward(self, x):
         x = x + self.attn(self.ln1(x))
@@ -82,11 +87,11 @@ class Block(nn.Module):
 
 class GPT(nn.Module):
 
-    def __init__(self, vocab_size, T=8, C=32, n_layers=4, num_head=4):
+    def __init__(self, vocab_size, T=8, C=32, n_layers=4, num_head=4, dropout=0.0):
         super().__init__()
         self.T = T
         self.embedding = Embedding(vocab_size, T, C)
-        self.blocks = nn.Sequential(*[Block(C, T, num_head) for _ in range(n_layers)])
+        self.blocks = nn.Sequential(*[Block(C, T, num_head, dropout) for _ in range(n_layers)])
         self.ln_f = nn.LayerNorm(C)
         self.lm_head = nn.Linear(C, vocab_size)
 
