@@ -5,3 +5,4 @@ model-aws-step750.pt
 out/
 uwu/
 training-aws.log
+sanity_check.py
